@@ -28,6 +28,7 @@ with sync_playwright() as p:
             for row in csv_reader:
                 page.goto("https://www.gob.pe/admin2/informes-publicaciones?filters%5Brelated_institution%5D=own")
                 page.fill('#filters_words',row[0])
+                page.select_option("#filters_sort",value="title_asc")
                 page.press("input#filters_words", "Enter")
                 page.wait_for_timeout(2000)
                 enlaces = page.query_selector_all("td > div > div.ml-auto.flex > span.inline-block.mr-2 > a")
@@ -41,11 +42,16 @@ with sync_playwright() as p:
                             nueva.click("a:has-text('Agregar documento')")
                             nueva.set_input_files("input.file.required.js-documents-fields-file", row[1])
                             nueva.click('input[value="Guardar y publicar"]') 
-                            # Esta linea de arriba lo que hace es guardar la publicacion
                             nueva.wait_for_load_state('networkidle')
-                            # con esto esperamos que la pagina cargue y suba el archivo  para poder recien cerrarla
+                            page.wait_for_timeout(3000)
+                            check = nueva.locator("body > div.yield.py-5.bg-white.flex-1 > div > div.flash.flex.success > div.flex-1",has_text="Se ha modificado la publicación")
+                            if check:
+                                with open("resumen.txt", "a") as archivo:
+                                    archivo.write(f"El Memorando {row[0]} - se MODIFICO correctamente ✅ \n")
+                            else:
+                                with open("resumen.txt", "a") as archivo:
+                                    archivo.write(f"❌ El Memorando {row[0]} - no se MODIFICO!!!! \n")
                             nueva.close()
                         else:
                             continue
                     continue
-    page.pause()
