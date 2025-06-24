@@ -48,10 +48,11 @@ with sync_playwright() as p:
     
                 page.click("#new_report > div > fieldset:nth-child(6) > div.input-control.select.optional.report_documents_collections > div > div > div.choices__inner__custom > input")
 
-                page.keyboard.type("Convocatorias de Servicio 2025", delay=100)
+                page.keyboard.type("Convocatorias de Servicio 2025", delay=50)
                 page.wait_for_timeout(500)
                 page.click('#choices--report_documents_collection_ids-item-choice-1')
                 page.click('input[value="Guardar y publicar"]')
+                page.wait_for_load_state('networkidle')
                 page.wait_for_timeout(1500)
                 check = page.locator("body > div.yield.py-5.bg-white.flex-1 > div > div.flash.flex.success > div.flex-1",has_text="Se ha modificado la publicación")
                 if check:
@@ -61,6 +62,6 @@ with sync_playwright() as p:
                     with open("resumen.txt", "a") as archivo:
                         archivo.write(f"❌ El Memorando {row[0]} - no se PUBLICO !!!! \n")
                         
-                page.wait_for_load_state('networkidle')
+                page.close()
 
     page.pause()

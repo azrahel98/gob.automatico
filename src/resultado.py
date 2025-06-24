@@ -23,7 +23,7 @@ with sync_playwright() as p:
         page.pause()
         context.storage_state(path="sesion.json")
     else:
-        with open('descarga.csv',mode="r",newline="",encoding="utf-8") as file:
+        with open('resultado.csv',mode="r",newline="",encoding="utf-8") as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
                 page.goto("https://www.gob.pe/admin2/informes-publicaciones?filters%5Brelated_institution%5D=own")
@@ -44,14 +44,26 @@ with sync_playwright() as p:
                             nueva.click('input[value="Guardar y publicar"]') 
                             nueva.wait_for_load_state('networkidle')
                             page.wait_for_timeout(3000)
-                            check = nueva.locator("body > div.yield.py-5.bg-white.flex-1 > div > div.flash.flex.success > div.flex-1",has_text="Se ha modificado la publicación")
-                            if check:
-                                with open("resumen.txt", "a") as archivo:
-                                    archivo.write(f"El Memorando {row[0]} - se MODIFICO correctamente ✅ \n")
-                            else:
-                                with open("resumen.txt", "a") as archivo:
-                                    archivo.write(f"❌ El Memorando {row[0]} - no se MODIFICO!!!! \n")
-                            nueva.close()
+                            check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
+                            try:
+                                check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
+                                mensaje = f"El Memorando {row[0]} - se MODIFICÓ correctamente ✅\n" if check.is_visible() \
+                                        else f"❌ El Memorando {row[0]} - NO se modificó.\n"
+                            except Exception as e:
+                                    ensaje = f"❌ El Memorando {row[0]} - ERROR al verificar modificación: {e}\n"
+
+                            finally:
+                                with open("resumen.txt", "a", encoding="utf-8") as archivo:
+                                    archivo.write(mensaje)
+                                nueva.close()
+                            # if check.is_visible():
+                            #     with open("resumen.txt", "a") as archivo:
+                            #         archivo.write(f"El Memorando {row[0]} - se MODIFICO correctamente ✅ \n")
+                            # else:
+                            #     with open("resumen.txt", "a") as archivo:
+                            #         archivo.write(f"❌ El Memorando {row[0]} - no se MODIFICO!!!! \n")
                         else:
+                            with open("resumen.txt", "a", encoding="utf-8") as archivo:
+                                    archivo.write(f"❌ El Memorando {row[0]} - no se ENCONTRO!!!! \n")
                             continue
                     continue
