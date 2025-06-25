@@ -30,40 +30,36 @@ with sync_playwright() as p:
                 page.fill('#filters_words',row[0])
                 page.select_option("#filters_sort",value="title_asc")
                 page.press("input#filters_words", "Enter")
-                page.wait_for_timeout(2000)
+                page.wait_for_load_state('networkidle')
                 enlaces = page.query_selector_all("td > div > div.ml-auto.flex > span.inline-block.mr-2 > a")
+                if len(enlaces) == 0:
+                    with open("resumen.txt", "a", encoding="utf-8") as archivo:
+                        archivo.write(f"⚠️ El Memorando {row[0]} - no se ENCONTRO \n")
                 for i, x in enumerate(enlaces):
-                    if i == 0:
-                        href = x.get_attribute("href")
-                        if href:
-                            nueva = context.new_page()
-                            nueva.goto("https://www.gob.pe" + href)
-                            nueva.wait_for_load_state()
-                            nueva.click("a:has-text('Agregar documento')")
-                            nueva.set_input_files("input.file.required.js-documents-fields-file", row[1])
-                            nueva.click('input[value="Guardar y publicar"]') 
-                            nueva.wait_for_load_state('networkidle')
-                            page.wait_for_timeout(3000)
+                    href = x.get_attribute("href")
+                    nmr = href.split("/edit?")
+                    nmr[0] = nmr[0].replace("-pdf","")
+                    nombre = nmr[0].split("n-")
+                    textoexacto = nombre[1].split("-")
+                    textoexacto = "-".join(textoexacto[0:3]).strip().upper()
+                    if textoexacto == row[0].strip().upper():
+                        nueva = context.new_page()
+                        nueva.goto("https://www.gob.pe" + href)
+                        nueva.wait_for_load_state()
+                        nueva.click("a:has-text('Agregar documento')")
+                        nueva.set_input_files("input.file.required.js-documents-fields-file", row[1])
+                        nueva.click('input[value="Guardar y publicar"]')
+                        nueva.wait_for_load_state('networkidle')
+                        page.wait_for_timeout(1000)
+                        check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
+                        try:
                             check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
-                            try:
-                                check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
-                                mensaje = f"El Memorando {row[0]} - se MODIFICÓ correctamente ✅\n" if check.is_visible() \
-                                        else f"❌ El Memorando {row[0]} - NO se modificó.\n"
-                            except Exception as e:
-                                    ensaje = f"❌ El Memorando {row[0]} - ERROR al verificar modificación: {e}\n"
-
-                            finally:
-                                with open("resumen.txt", "a", encoding="utf-8") as archivo:
-                                    archivo.write(mensaje)
-                                nueva.close()
-                            # if check.is_visible():
-                            #     with open("resumen.txt", "a") as archivo:
-                            #         archivo.write(f"El Memorando {row[0]} - se MODIFICO correctamente ✅ \n")
-                            # else:
-                            #     with open("resumen.txt", "a") as archivo:
-                            #         archivo.write(f"❌ El Memorando {row[0]} - no se MODIFICO!!!! \n")
-                        else:
+                            mensaje = f"El Memorando {row[0]} - se MODIFICÓ correctamente ✅\n" if check.is_visible() \
+                                    else f"❌ El Memorando {row[0]} - NO se modificó.\n"
+                        except Exception as e:
+                                ensaje = f"❌ El Memorando {row[0]} - ERROR al verificar modificación: {e}\n"
+                        finally:
                             with open("resumen.txt", "a", encoding="utf-8") as archivo:
-                                    archivo.write(f"❌ El Memorando {row[0]} - no se ENCONTRO!!!! \n")
-                            continue
-                    continue
+                                archivo.write(mensaje)
+                        nueva.close()
+             

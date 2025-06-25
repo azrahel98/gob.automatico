@@ -39,29 +39,22 @@ with sync_playwright() as p:
                 page.select_option("#report_publication_1i",row[4]) # año
                 page.select_option("#report_publication_4i",row[5]) # hora
                 page.select_option("#report_publication_5i",row[6]) # minuto
-                
                 page.click('.choices[data-type="select-multiple"]')
                 page.click('#choices--report_category_ids-item-choice-50')
                 page.click('.choices[data-type="select-multiple"]')
                 page.click('#choices--report_category_ids-item-choice-22')
                 page.press('.choices[data-type="select-multiple"]', "Escape")
-    
                 page.click("#new_report > div > fieldset:nth-child(6) > div.input-control.select.optional.report_documents_collections > div > div > div.choices__inner__custom > input")
-
                 page.keyboard.type("Convocatorias de Servicio 2025", delay=50)
                 page.wait_for_timeout(500)
                 page.click('#choices--report_documents_collection_ids-item-choice-1')
                 page.click('input[value="Guardar y publicar"]')
                 page.wait_for_load_state('networkidle')
-                page.wait_for_timeout(1500)
+                page.wait_for_timeout(1000)
                 check = page.locator("body > div.yield.py-5.bg-white.flex-1 > div > div.flash.flex.success > div.flex-1",has_text="Se ha modificado la publicación")
                 if check:
-                    with open("resumen.txt", "a") as archivo:
+                    with open("resumen.txt", "a", encoding="utf-8") as archivo:
                         archivo.write(f"El Memorando {row[0]} - se PUBLICO correctamente ✅ \n")
                 else:
-                    with open("resumen.txt", "a") as archivo:
+                    with open("resumen.txt", "a", encoding="utf-8") as archivo:
                         archivo.write(f"❌ El Memorando {row[0]} - no se PUBLICO !!!! \n")
-                        
-                page.close()
-
-    page.pause()
