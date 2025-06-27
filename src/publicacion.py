@@ -43,7 +43,6 @@ def crear_publicaciones(csv_path: str):
 
                 try:
                     page.goto("https://www.gob.pe/admin2/informes-publicaciones/new")
-
                     page.fill('#report_title', row[0])
                     page.click('.choices[data-type="select-one"]')
                     page.wait_for_selector('.choices__list--dropdown')
@@ -73,17 +72,15 @@ def crear_publicaciones(csv_path: str):
                     page.press('.choices[data-type="select-multiple"]', "Escape")
 
                     page.click("#new_report > div > fieldset:nth-child(6) > div.input-control.select.optional.report_documents_collections > div > div > div.choices__inner__custom > input")
-                    page.keyboard.type("Convocatorias de Servicio 2025", delay=50)
-                    page.wait_for_timeout(500)
+                    page.keyboard.type("Convocatorias de Servicio 2025", delay=1)
                     page.click('#choices--report_documents_collection_ids-item-choice-1')
 
-                    #page.click('input[value="Guardar y publicar"]')
-                    page.wait_for_load_state('networkidle')
-                    page.wait_for_timeout(1000)
-
+                    with page.expect_navigation():
+                        page.click('input[value="Guardar y publicar"]')
+                    
                     check = page.locator(
                         "body > div.yield.py-5.bg-white.flex-1 > div > div.flash.flex.success > div.flex-1",
-                        has_text="Se ha modificado la publicación"
+                        has_text="Se ha creado la publicación"
                     )
                     if check.is_visible():
                         mensaje = f"✅ {row[0]}: publicación realizada correctamente."
@@ -95,3 +92,4 @@ def crear_publicaciones(csv_path: str):
 
                 print(mensaje)
                 resumen.write(mensaje + "\n\n")
+ 
