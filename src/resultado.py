@@ -77,10 +77,7 @@ def crear_archivos(csv_path: str):
                             
                             with nueva.expect_navigation():
                                 nueva.click('input[value="Guardar y publicar"]')
-                            # nueva.click('input[value="Guardar y publicar"]')
-                            # nueva.wait_for_load_state('networkidle')
-                            # page.wait_for_timeout(1000)
-
+                            nueva.wait_for_load_state('networkidle')
                             try:
                                 check = nueva.locator("div.flash.flex.success >> text=Se ha modificado la publicación")
                                 if check.is_visible():
